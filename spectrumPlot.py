@@ -29,8 +29,8 @@ if __name__ == "__main__":
     c = 3e8                     # wave speed (m/s)
     tau = d / c                 # time per section
 
-    # Frequency sweep (0 -> 300 MHz)
-    freq = np.linspace(0, 300e6, 20000)   # Hz
+    # Frequency sweep (0 -> 600 MHz)
+    freq = np.linspace(0, 600e6, 20000)   # Hz
     omega = 2 * np.pi * freq
 
     # Compute magnitude
@@ -45,3 +45,4 @@ if __name__ == "__main__":
     plt.grid(True, linestyle="--", linewidth=0.5)
     plt.tight_layout()
     plt.show()
+
