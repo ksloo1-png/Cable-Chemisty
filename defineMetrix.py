@@ -29,10 +29,12 @@ M2 = M_matrix(Z2, tao, omega)
 
 # Display results
 np.set_printoptions(precision=4, suppress=True)
-print("M1 =\n", M1)
-print("\nM2 =\n", M2)
+#print("M1 =\n", M1)
+#print("\nM2 =\n", M2)
 
+"""
 M_total = np.eye(2, dtype=complex)
 for Zn in [50, 93, 50, 93]:
     M_total = M_matrix(Zn, tao, omega) @ M_total
 print("\nM_total =\n", M_total)
+"""
