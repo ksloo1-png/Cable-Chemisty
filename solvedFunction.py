@@ -36,27 +36,22 @@ def transmission_spectrum(tau, Z_list, omega_array):
 
 if __name__ == "__main__":
     # Build random Z sequence (edit length/seed as you wish)
-    Z_list = random_Z_list(length=100, values=(50.0, 93.0), seed=42)
+    Z_list = random_Z_list(length=10, values=(50.0, 93.0), seed=42)
 
     d = 0.5            # m
-    c = 2e8            # m/s  (use your cable’s velocity)
+    c = 3e8            # m/s  (note: changed from 2e8 to 3e8)
     tau = d / c
 
     # Frequency sweep
-    f = np.linspace(0, 300e6, 40000)   # Hz
+    f = np.linspace(0, 600e6, 1000)   # Hz
     omega = 2*np.pi*f
 
     # Compute |T|
     Tmag = transmission_spectrum(tau, Z_list, omega)
 
-    # Example: ABCD at a single frequency (150 MHz)
-    w_sample = 2*np.pi*150e6
-    A, B, C, D = get_transfer_ABCD(tau, Z_list, w_sample)
-    print("A,B,C,D @ 150 MHz:", A, B, C, D)
-
     # Plot
     plt.figure(figsize=(9,5))
-    plt.plot(f/1e6, Tmag)
+    plt.plot(omega/1e6, Tmag)
     plt.xlabel("Frequency (MHz)")
     plt.ylabel(r"$|T|$")
     plt.title(r"Transmission magnitude $|T|$ vs Frequency")

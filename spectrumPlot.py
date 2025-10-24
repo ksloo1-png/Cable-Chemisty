@@ -47,7 +47,7 @@ def random_Z_list(length, values=(50.0, 93.0), seed=None):
 
 if __name__ == "__main__":
     # --- Parameters ---
-    Z_list = random_Z_list(length=60, values=(50.0, 93.0), seed=None)  # random Z sequence
+    Z_list = random_Z_list(length=100, values=(50.0, 93.0), seed=None)  # random Z sequence
     d = 0.5                     # section length (m)
     c = 3e8                     # wave speed (m/s)
     tau = d / c                 # time per section
