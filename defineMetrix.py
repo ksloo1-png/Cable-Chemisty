@@ -66,8 +66,8 @@ if __name__ == "__main__":
     omega0 = 2 * np.pi * f0
     tau = np.pi / (2.0 * omega0)   # quarter-wave condition
 
-    n = 60           # number of sections
-    case = "repeat"  # choose: "random" or "repeat"
+    n = 100          # number of sections
+    case = "random"  # choose: "random" or "repeat"
 
     if case == "random":
         Z_list = random_Z_list(n, 50.0, 93.0, seed=42)
@@ -76,7 +76,7 @@ if __name__ == "__main__":
     else:
         raise ValueError("case must be 'random' or 'repeat'.")
 
-    print(f"Z_list (first 12 shown): {Z_list[:12]} ...")
+    #print(f"Z_list (first 12 shown): {Z_list[:12]} ...")
 
     Z_in, Z_out = Z_list[0], Z_list[-1]
 
@@ -95,7 +95,7 @@ if __name__ == "__main__":
              label=f"{case.title()} Z pattern")
     plt.xlabel("Frequency (MHz)")
     plt.ylabel(r"$|T|$")
-    plt.title(rf"|T| vs Frequency (n={n}, $f_0$=114 MHz, $\tau=\pi/(2\omega_0)$)")
+    plt.title(rf"|T| vs Frequency (n={n})")
     plt.ylim(0, 1.05)
     plt.grid(True, linestyle="--", linewidth=0.6)
     plt.legend()
