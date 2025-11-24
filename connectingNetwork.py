@@ -3,10 +3,15 @@
 Transmission-line network → Tight-binding form with ports.
 Implements Eq. (24): (H + iΓ)v = ε v + iV  ⇒  v = i (H + iΓ - ε I)^(-1) V
 and Eq. (31): v_out = i G_{β α} √(1-ε²) v_in  →  T = v_out / v_in
+
+Now:
+  ε = cos(ωτ),  ω = 2πf,  τ = π / (2ω0),  f0 = 114 MHz
+  Sweep f ∈ [0, 600 MHz] and plot |T_phys| vs f.
 """
 
 import numpy as np
 import random
+import matplotlib.pyplot as plt
 
 
 # ---------- Core Builders ----------
@@ -54,7 +59,7 @@ def build_H_and_Gamma(n, connections, Z_links, ports_in=None, ports_out=None):
         Gamma_diag[j] += (sigma[j] ** 2) / Zout
     Gamma = np.diag(Gamma_diag)
 
-    return H, Gamma, sigma, Zinv
+    return H, Gamma, sigma
 
 
 def make_A(H, Gamma, eps):
@@ -76,14 +81,25 @@ def build_driving_vector(n, sigma, ports_in, eps, Vin=1.0):
     return V
 
 
-# ---------- Example Network ----------
+def compute_T_phys(H, Gamma, sigma, ports_in, ports_out, eps, Vin=1.0):
+    """Compute physical transmission T_phys for a given ε."""
+    A, _ = make_A(H, Gamma, eps)
+    G = np.linalg.inv(A)
+    V = build_driving_vector(len(sigma), sigma, ports_in, eps, Vin=Vin)
+    v = 1j * (G @ V)
+    α = list(ports_in.keys())[0]
+    β = list(ports_out.keys())[0]
+    T_phys = (sigma[β] * v[β]) / (sigma[α] * v[α])
+    return T_phys
+
+
+# ---------- Main Frequency Sweep ----------
 if __name__ == "__main__":
     n = 5
     connections = [(0,1), (1,2), (2,3), (3,4)]
 
-    # --- choose impedance pattern ---
+    # choose impedance pattern
     mode = "periodic"   # "periodic" or "random"
-
     if mode == "periodic":
         Z_list = [50 if i % 2 == 0 else 93 for i in range(len(connections))]
     elif mode == "random":
@@ -91,40 +107,33 @@ if __name__ == "__main__":
     else:
         Z_list = [50.0 for _ in range(len(connections))]
 
-    # Ports and parameters
     ports_in  = {0: 50.0}
     ports_out = {4: 50.0}
-    eps = 0.3
     Vin = 1.0
 
-    # --- build system ---
-    H, Gamma, sigma, Zinv = build_H_and_Gamma(
-        n, connections, Z_list, ports_in=ports_in, ports_out=ports_out
-    )
-    A, Gamma_s = make_A(H, Gamma, eps)
-    G = np.linalg.inv(A)
-    V = build_driving_vector(n, sigma, ports_in, eps, Vin=Vin)
-    v = 1j * (G @ V)
-    V_phys = sigma * v
+    # Build constant parts
+    H, Gamma, sigma = build_H_and_Gamma(n, connections, Z_list, ports_in, ports_out)
 
-    # --- input/output voltages ---
-    α = list(ports_in.keys())[0]
-    β = list(ports_out.keys())[0]
-    v_in = v[α]
-    v_out = v[β]
-    T_phys = (sigma[β] * v[β]) / (sigma[α] * v[α])
+    # Frequency sweep
+    f0 = 114e6
+    omega0 = 2 * np.pi * f0
+    tau = np.pi / (2.0 * omega0)
 
+    f_range = np.linspace(0, 600e6, 601)
+    T_vals = []
 
-    # --- print results ---
-    np.set_printoptions(precision=6, suppress=True)
-    print("Z_list (Ω) =", Z_list)
-    print(f"\nInput site α={α}, Output site β={β}")
-    print(f"v_in  = {v_in}")
-    print(f"v_out = {v_out}")
-    print(f"T = v_out / v_in = {T_phys}  (|T| = {abs(T_phys):.6f}, |T|² = {abs(T_phys)**2:.6f})")
+    for f in f_range:
+        omega = 2 * np.pi * f
+        eps = np.cos(omega * tau)
+        T_phys = compute_T_phys(H, Gamma, sigma, ports_in, ports_out, eps)
+        T_vals.append(abs(T_phys))
 
-    print("\n--- Matrices summary ---")
-    print("H:\n", np.round(H, 6))
-    print("\nΓ_s:\n", np.round(Gamma_s, 6))
-    print("\nA = H + iΓ_s - εI:\n", np.round(A, 6))
-    print("\nG = A⁻¹:\n", np.round(G, 6))
+    # Plot |T_phys| vs frequency
+    plt.figure(figsize=(8, 4))
+    plt.plot(f_range / 1e6, T_vals, lw=1.8)
+    plt.title(f"|T_phys| vs Frequency (Z_list={Z_list})")
+    plt.xlabel("Frequency (MHz)")
+    plt.ylabel("|T_phys|")
+    plt.grid(True, ls="--", alpha=0.6)
+    plt.tight_layout()
+    plt.show()
